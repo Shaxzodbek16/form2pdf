@@ -28,8 +28,8 @@ def make_pdf(data: dict[str, str], picture) -> bytes:
         try:
             img = ImageReader(picture)
             p.drawImage(img, 100, 550, width=150, height=150, preserveAspectRatio=True)
-        except Exception:
-            pass
+        except (IOError, ValueError) as e:
+            logging.error(f"Failed to process the image: {e}")
     p.showPage()
     p.save()
     return buffer.getvalue()
