@@ -6,17 +6,24 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
+import textwrap
 
 
 def make_pdf(data: dict[str, str], picture) -> bytes:
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer)
     p.setFont("Helvetica", 14)
-    p.drawString(100, 800, "Fake University Application")
+    p.drawString(100, 800, "Sample University Application")
     p.drawString(100, 780, f"Name: {data.get('name', '')}")
     p.drawString(100, 760, f"Age: {data.get('age', '')}")
     p.drawString(100, 740, f"Email: {data.get('email', '')}")
-    p.drawString(100, 720, f"Explanation: {data.get('explanation', '')}")
+    p.drawString(100, 720, "Explanation:")
+    text_y = 700
+    explanation = data.get('explanation', '') or ''
+    for paragraph in explanation.splitlines():
+        for line in textwrap.wrap(paragraph, width=80):
+            p.drawString(120, text_y, line)
+            text_y -= 20
     if picture:
         try:
             img = ImageReader(picture)
@@ -35,7 +42,7 @@ def download(request):
     with default_storage.open(path, 'rb') as f:
         pdf = f.read()
     response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="application.pdf"'
+    response['Content-Disposition'] = 'inline; filename=application.pdf'
     return response
 
 
